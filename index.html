@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Uni Lab - Premium Final Full</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* --- FAST SOLID UI WITH GLOW EFFECTS --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background: #0b1120; color: #fff; height: 100vh; overflow: hidden; }
+        
+        .glass { background: #151f32; border: 1px solid #2a3b5c; border-radius: 12px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        
+        .glass-input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #2a3b5c; background: #0b1120; color: white; outline: none; font-size: 14px; transition: border 0.2s, box-shadow 0.2s, color 0.2s; }
+        .glass-input:focus { border-color: #00a8ff; box-shadow: 0 0 5px rgba(0, 168, 255, 0.5); }
+        .glass-input::placeholder { color: #5a6b8c; }
+        
+        .error-glow { border: 2px solid #ff4d4d !important; background: rgba(255, 77, 77, 0.1) !important; box-shadow: 0 0 10px rgba(255,77,77,0.5) !important; }
+
+        .glass-btn { padding: 12px; border: 1px solid #2a3b5c; background: #1e293b; color: white; border-radius: 8px; cursor: pointer; font-size: 14px; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+        .glass-btn:active { transform: scale(0.95); background: #00a8ff; color: #000; border-color: #00a8ff; }
+
+        .btn-green:active { background: #05c46b; color: #000; border-color: #05c46b; }
+        .btn-red:active { background: #ff4d4d; color: #000; border-color: #ff4d4d; }
+
+        h2, h3, h4 { margin-bottom: 10px; font-weight: 600; color: #e2e8f0; }
+        .flex-row { display: flex; gap: 10px; align-items: center; } .flex-wrap { flex-wrap: wrap; }
+        .half { flex: 1; } .w-100 { width: 100%; } .mt-10 { margin-top: 10px; } .mb-10 { margin-bottom: 10px; }
+        .text-center { text-align: center; }
+        
+        .text-red { color: #ff4d4d; } .text-green { color: #05c46b; } .text-gold { color: #ffdd59; } .text-blue { color: #00a8ff; }
+
+        .top-nav { display: flex; overflow-x: auto; white-space: nowrap; position: fixed; top: 0; left: 0; right: 0; z-index: 100; border-radius: 0 0 12px 12px; padding: 10px; background: #0f172a; border-bottom: 1px solid #1e293b; }
+        .top-nav::-webkit-scrollbar { display: none; }
+        .nav-btn { background: none; border: none; color: #94a3b8; padding: 10px 15px; margin-right: 5px; font-size: 14px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .nav-btn.active { font-weight: bold; background: rgba(0, 168, 255, 0.15); color: #00a8ff; border-bottom: 2px solid #00a8ff; }
+        
+        .app-section { display: none; padding: 75px 15px 80px 15px; height: 100vh; overflow-y: auto; }
+        .active-section { display: block; } 
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .card { background: #151f32; padding: 15px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #2a3b5c; }
+        .deleted-card { border-color: #ff4d4d; background: rgba(255,77,77,0.05); }
+        
+        .accordion-body { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #2a3b5c; }
+        .accordion-body.open { display: block; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 200; align-items: center; justify-content: center; padding: 15px; }
+        .modal.show { display: flex; }
+        .modal-content { background: #0f172a; padding: 20px; border-radius: 12px; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid #00a8ff; }
+        .dashed-line { border-bottom: 1px dashed #2a3b5c; margin: 12px 0; }
+        
+        #cameraContainer { position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; }
+        #cameraStream { width: 100%; height: auto; max-height: 50vh; object-fit: cover; }
+        #canvasOverlay { display: none; }
+        .cam-gallery img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid #2a3b5c; }
+
+        .autocomplete-box { position: relative; }
+        .suggestions { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #151f32; border-radius: 8px; max-height: 180px; overflow-y: auto; z-index: 50; border: 1px solid #00a8ff; }
+        .suggestions div { padding: 12px; border-bottom: 1px solid #0f172a; cursor: pointer; }
+        .suggestions div:hover { background: #1e293b; color: #00a8ff; }
+        
+        .scroll-list { max-height: 150px; overflow-y: auto; border-bottom: 1px dashed #2a3b5c; margin-bottom: 15px; padding-bottom: 10px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #0f172a; font-size: 13px; }
+        .test-tag { background: #1e293b; padding: 8px; border-radius: 6px; margin-bottom: 5px; border: 1px solid #2a3b5c; display: flex; justify-content: space-between; align-items: center; }
+
+        .toast { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); background: #05c46b; color: #000; padding: 10px 20px; border-radius: 20px; font-weight: bold; z-index: 9999; display: none; }
+        
+        /* Global Touch Glow Effect */
+        .click-glow {
+            position: fixed; width: 10px; height: 10px;
+            background: rgba(0, 168, 255, 0.8);
+            box-shadow: 0 0 20px 10px rgba(0, 168, 255, 0.5);
+            border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%) scale(1);
+            animation: glowOut 0.4s ease-out forwards;
+            z-index: 9999;
+        }
+        @keyframes glowOut { 100% { transform: translate(-50%, -50%) scale(6); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="toast" class="toast">Successful!</div>
+
+    <!-- LOCK SCREEN -->
+    <div id="lockScreen" class="glass" style="position:fixed; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; z-index:1000; border-radius:0;">
+        <div class="text-center w-100" style="padding: 20px; max-width: 350px; background: #151f32; border-radius: 12px; border: 1px solid #2a3b5c;">
+            <h2 class="text-blue">Uni Lab</h2>
+            <input type="number" id="loginId" placeholder="Enter ID" class="glass-input text-center" style="font-size: 20px; letter-spacing: 5px;">
+            <button onclick="loginApp()" class="glass-btn btn-green w-100" style="background: #05c46b; color:#000; font-weight:bold; font-size:16px;">Unlock</button>
+            <p id="errorMsg" class="text-red mt-10" style="display: none;">Invalid ID</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="mainApp" style="display: none;">
+        
+        <!-- NAV -->
+        <div class="top-nav">
+            <button onclick="switchTab('dashboard')" class="nav-btn active">Dashboard</button>
+            <button onclick="switchTab('order')" class="nav-btn">Order</button>
+            <button onclick="switchTab('newBill')" class="nav-btn">New Bill</button>
+            <button onclick="switchTab('summary')" class="nav-btn">Summary</button>
+            <button onclick="switchTab('cancelEdit')" class="nav-btn text-red">Cancel/Edit</button>
+            <button onclick="switchTab('profile')" class="nav-btn text-gold">Profile</button>
+        </div>
+
+        <!-- 1. DASHBOARD -->
+        <div id="dashboard" class="app-section active-section">
+            <div class="glass">
+                <h3>Dashboard</h3>
+                
+                <h4 class="mt-10 text-blue">Daily KM Manager</h4>
+                <div class="flex-row mb-10">
+                    <input type="date" id="dKmDate" class="glass-input half">
+                    <input type="number" id="dKmValue" placeholder="Enter KM" class="glass-input half">
+                    <button class="glass-btn btn-green text-green" onclick="saveDailyKm()">Save KM</button>
+                </div>
+
+                <div class="dashed-line"></div>
+
+                <div class="flex-row mb-10">
+                    <div class="half"><p style="font-size:12px;color:#94a3b8;">Start Date</p><input type="date" id="dDate1" class="glass-input" onchange="calcDash()"></div>
+                    <div class="half"><p style="font-size:12px;color:#94a3b8;">End Date</p><input type="date" id="dDate2" class="glass-input" onchange="calcDash()"></div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="card text-center"><p>Total Visits</p><h3 id="dVisits" class="text-gold">0</h3></div>
+                    <div class="card text-center"><p>Visit Amt</p><h3 id="dVisitAmt" class="text-green">₹0</h3></div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card text-center"><p>Total KM</p><h3 id="dKm" class="text-blue">0</h3></div>
+                    <div class="card text-center"><p>KM Amt</p><h3 id="dKmAmt" class="text-green">₹0</h3></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ORDER -->
+        <div id="order" class="app-section">
+            <div class="glass">
+                <h3>Orders</h3>
+                <div class="flex-row">
+                    <div class="half"><p style="font-size:12px;color:#94a3b8;">Start Date</p><input type="date" id="oDate1" class="glass-input" onchange="renderOrders()"></div>
+                    <div class="half"><p style="font-size:12px;color:#94a3b8;">End Date</p><input type="date" id="oDate2" class="glass-input" onchange="renderOrders()"></div>
+                </div>
+                <input type="search" id="oSearch" placeholder="Search Name/ID..." class="glass-input" onkeyup="renderOrders()">
+                <div id="orderList" class="mt-10"></div>
+            </div>
+        </div>
+
+        <!-- 3. NEW BILL -->
+        <div id="newBill" class="app-section">
+            <div class="glass">
+                <h3>Create New Bill</h3>
+                <p style="font-size:12px; color:#ffdd59; margin-bottom:10px;">Type "Leave" or "No collections" in Name box for 0 calculations.</p>
+                
+                <!-- KM DATE & KM -->
+                <div class="flex-row mb-10">
+                    <input type="date" id="nbDate" class="glass-input half">
+                    <input type="number" id="nbKm" placeholder="KM (Optional)" class="glass-input half">
+                </div>
+                
+                <button class="glass-btn w-100 mb-10 text-blue" onclick="openSameHomeModal()" style="border-color: #00a8ff;">+ Select Same Home Patient</button>
+                <div id="linkedInfo" class="mb-10 text-gold" style="font-size:13px; display:none;"></div>
+
+                <div class="autocomplete-box">
+                    <input type="tel" id="nbMobile" placeholder="Mobile Number *" class="glass-input" oninput="formatMobile(this)" onblur="hideSuggestions('mobSug')">
+                    <div id="mobSug" class="suggestions"></div>
+                </div>
+                
+                <div class="flex-row flex-wrap mb-10" style="gap: 5px;">
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Mr')">Mr</button>
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Mrs')">Mrs</button>
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Miss')">Miss</button>
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Ms')">Ms</button>
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Master')">Master</button>
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Baby')">Baby</button>
+                    <button class="glass-btn" style="padding: 8px 10px;" onclick="setGender('Transgender')">Trans</button>
+                </div>
+
+                <div class="autocomplete-box">
+                    <input type="text" id="nbName" placeholder="Patient Name *" class="glass-input" oninput="suggestData('nbName', 'nameSug', 'name'); clearError(this)" onblur="hideSuggestions('nameSug')">
+                    <div id="nameSug" class="suggestions"></div>
+                </div>
+
+                <div class="flex-row">
+                    <input type="text" id="nbGender" placeholder="Title/Gender" class="glass-input half" readonly>
+                    <input type="text" id="nbAge" placeholder="Age *" class="glass-input half" oninput="clearError(this)">
+                </div>
+
+                <div class="flex-row">
+                    <div class="autocomplete-box half">
+                        <input type="text" id="nbDr" placeholder="Dr Name" class="glass-input" oninput="suggestArr('nbDr', 'drSug', doctors)" onblur="hideSuggestions('drSug')">
+                        <div id="drSug" class="suggestions"></div>
+                    </div>
+                    <button class="glass-btn" onclick="openManageModal('Doctor')">Save Dr</button>
+                </div>
+
+                <div class="flex-row mt-10">
+                    <div class="autocomplete-box half">
+                        <input type="text" id="nbHosp" placeholder="Hospital Name" class="glass-input" oninput="suggestArr('nbHosp', 'hospSug', hospitals); checkHospForVisit()" onblur="hideSuggestions('hospSug')">
+                        <div id="hospSug" class="suggestions"></div>
+                    </div>
+                    <button class="glass-btn" onclick="openManageModal('Hospital')">Save Hosp</button>
+                </div>
+
+                <div class="dashed-line"></div>
+                <h4 style="font-size:14px; color:#94a3b8;">Add Tests</h4>
+                <div class="autocomplete-box">
+                    <input type="text" id="nbTestSearch" placeholder="Search Test to Add" class="glass-input" oninput="suggestTests('nbTestSearch', 'testSug', 'nb')" onblur="hideSuggestions('testSug')">
+                    <div id="testSug" class="suggestions"></div>
+                </div>
+                <div id="nbSelectedTests" style="max-height: 200px; overflow-y:auto; margin-bottom: 10px;"></div>
+                <div class="dashed-line"></div>
+
+                <div class="flex-row mt-10">
+                    <input type="number" id="nbTotalAmt" placeholder="Total Amount" class="glass-input half" oninput="calcDue()">
+                    <input type="number" id="nbDiscount" placeholder="Discount" class="glass-input half" oninput="calcDue()">
+                </div>
+                <div class="flex-row">
+                    <input type="number" id="nbDueAmt" placeholder="Due Amount" class="glass-input half" readonly style="background: rgba(255,77,77,0.1); border-color:#ff4d4d;">
+                </div>
+
+                <button class="glass-btn w-100 text-blue mt-10" onclick="togglePayOpts()">Payment Modes ^</button>
+                
+                <div id="payOpts" style="display:none; margin-top:10px; background:#1e293b; padding:10px; border-radius:8px;">
+                    <div class="grid-2">
+                        <input type="number" id="nbCash" placeholder="Cash Paid" class="glass-input" oninput="calcDue()">
+                        <input type="number" id="nbUpi" placeholder="UPI Paid" class="glass-input" oninput="calcDue()">
+                        <input type="number" id="nbCard" placeholder="Card Paid" class="glass-input" oninput="calcDue()">
+                        <input type="number" id="nbPayLater" placeholder="Pay Later" class="glass-input" oninput="calcDue()">
+                    </div>
+                </div>
+
+                <div class="dashed-line"></div>
+
+                <div class="flex-row mt-10">
+                    <input type="number" id="nbVisit" placeholder="Visits *" class="glass-input" value="1" oninput="clearError(this)">
+                </div>
+                
+                <button class="glass-btn btn-green w-100 mt-10" onclick="saveBill()" style="background: #05c46b; color:#000; font-weight:bold; font-size: 16px;">Save Bill</button>
+            </div>
+        </div>
+
+        <!-- 4. SUMMARY -->
+        <div id="summary" class="app-section">
+            <div class="glass">
+                <h3>Summary</h3>
+                <div class="flex-row mb-10 no-print">
+                    <div class="half"><p style="font-size:12px;color:#94a3b8;">Start Date</p><input type="date" id="sD1" class="glass-input" onchange="renderSummary()"></div>
+                    <div class="half"><p style="font-size:12px;color:#94a3b8;">End Date</p><input type="date" id="sD2" class="glass-input" onchange="renderSummary()"></div>
+                </div>
+                <button class="glass-btn btn-red w-100 mb-10 no-print" onclick="savePDF()" style="background: #ff4d4d; color:#000; font-weight:bold;">Download PDF</button>
+                
+                <div id="sumPrint" style="background: #fff; color: #000; padding: 20px; border-radius: 8px; font-family: Arial, sans-serif; display: none;">
+                    <div id="pdfContent"></div>
+                </div>
+                
+                <div id="uiSummaryDisplay" style="margin-top: 10px;"></div>
+            </div>
+        </div>
+
+        <!-- 5. CANCEL / EDIT -->
+        <div id="cancelEdit" class="app-section">
+            <div class="glass">
+                <h3 class="text-red">Cancel / Edit Bills</h3>
+                <input type="search" id="ceSearch" placeholder="Search Bill..." class="glass-input" onkeyup="renderCancelEdit()">
+                <div id="ceList" class="mt-10"></div>
+            </div>
+        </div>
+
+        <!-- 6. PROFILE -->
+        <div id="profile" class="app-section">
+            <div class="glass">
+                <h3 id="profName" class="text-gold">Profile</h3>
+                <div class="dashed-line"></div>
+                
+                <!-- TESTS -->
+                <h4>Lab Tests</h4>
+                <input type="text" id="tName" placeholder="Test Name" class="glass-input">
+                <div class="flex-row">
+                    <input type="text" id="tSample" placeholder="Sample (e.g. Serum)" class="glass-input half">
+                    <input type="text" id="tTube" placeholder="Tube (e.g. SST)" class="glass-input half">
+                    <input type="number" id="tAmt" placeholder="Amount (₹)" class="glass-input half">
+                </div>
+                <button class="glass-btn btn-green w-100 text-green mb-10" onclick="saveTest()" style="background:rgba(5, 196, 107, 0.2);">Add Test</button>
+                <div id="testList" class="scroll-list"></div>
+
+                <!-- PACKAGES -->
+                <h4>Packages</h4>
+                <div class="flex-row">
+                    <input type="text" id="pName" placeholder="Package Name" class="glass-input half">
+                    <input type="number" id="pAmt" placeholder="Amount (₹)" class="glass-input half">
+                </div>
+                <div class="autocomplete-box">
+                    <input type="text" id="pTestSearch" placeholder="Search to add tests to package..." class="glass-input" oninput="suggestTests('pTestSearch', 'pkgTestSug', 'pkg')" onblur="hideSuggestions('pkgTestSug')">
+                    <div id="pkgTestSug" class="suggestions"></div>
+                </div>
+                <div id="pkgSelectedTests" style="margin-bottom:10px;"></div>
+                <button class="glass-btn btn-blue w-100 text-blue mb-10" onclick="savePkg()" style="background:rgba(0, 168, 255, 0.2);">Add Package</button>
+                <div id="pkgList" class="scroll-list"></div>
+                
+                <!-- OWNER SETTINGS -->
+                <div id="ownerSettings" style="display:none;">
+                    <h4 class="text-red mt-10">User Management</h4>
+                    <input type="text" id="uName" placeholder="User Name" class="glass-input">
+                    <div class="flex-row">
+                        <input type="number" id="uId" placeholder="Login ID" class="glass-input half">
+                        <select id="uRole" class="glass-input half" style="padding: 10px; background:#0b1120; color:#fff; border: 1px solid #2a3b5c; border-radius:8px;">
+                            <option value="Employee">Employee</option>
+                            <option value="Owner">Owner</option>
+                        </select>
+                    </div>
+                    <button class="glass-btn w-100 text-gold mb-10" onclick="saveUser()">Add User</button>
+                    <div id="userList" class="scroll-list"></div>
+
+                    <button class="glass-btn w-100 mt-10" onclick="switchAcc()" style="background: rgba(235, 77, 75, 0.3); color:#ff4d4d;">Logout / Switch Account</button>
+                </div>
+                <button id="empLogoutBtn" class="glass-btn w-100 mt-10" onclick="switchAcc()" style="background: rgba(235, 77, 75, 0.3); color:#ff4d4d; display:none;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <!-- Manage DR/HOSP -->
+    <div id="manageModal" class="modal">
+        <div class="modal-content">
+            <h3 id="manageTitle" class="text-blue">Manage</h3>
+            <input type="text" id="manageInput" class="glass-input">
+            <button class="glass-btn btn-green w-100 text-green mb-10" onclick="saveManageItem()" style="background:rgba(5,196,107,0.2);">Save & Add</button>
+            <div id="manageList" class="scroll-list" style="max-height: 250px;"></div>
+            <button class="glass-btn btn-red w-100 text-red" onclick="closeModal('manageModal')" style="background:rgba(255,77,77,0.2);">Close</button>
+        </div>
+    </div>
+
+    <!-- Same Home -->
+    <div id="shModal" class="modal">
+        <div class="modal-content">
+            <h3 class="text-blue">Select Same Home</h3>
+            <input type="date" id="shDate" class="glass-input mb-10" onchange="renderSHList()">
+            <div id="shList" style="max-height: 250px; overflow-y:auto;"></div>
+            <button class="glass-btn btn-red w-100 mt-10 text-red" onclick="closeModal('shModal')" style="background:rgba(255,77,77,0.2);">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Receipt -->
+    <div id="receiptModal" class="modal">
+        <div class="modal-content" id="receiptPrintWrapper">
+            <div id="receiptPrint" style="background:#fff; color:#000; padding:20px; font-family:sans-serif; border-radius:8px;"></div>
+            <div class="flex-row no-print mt-10">
+                <button class="glass-btn btn-red half text-red" onclick="closeModal('receiptModal')" style="background:rgba(255,77,77,0.2);">Close</button>
+                <button class="glass-btn btn-blue half text-blue" onclick="printReceipt()" style="background:rgba(0,168,255,0.2);">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Camera / Upload -->
+    <div id="camModal" class="modal">
+        <div class="modal-content" style="padding: 10px;">
+            <div class="flex-row mb-10">
+                <h3 class="half" id="cTitle">Camera / Upload</h3>
+                <button class="glass-btn btn-blue" onclick="camAddSymbol()" style="padding: 5px 10px;">+</button>
+            </div>
+            
+            <div id="cameraContainer">
+                <video id="cameraStream" autoplay playsinline></video>
+                <canvas id="canvasOverlay"></canvas>
+            </div>
+            
+            <p id="cMode" class="text-center mt-10 text-gold" style="font-size:13px;"></p>
+            <div class="flex-row mt-10" id="cBtns">
+                <button class="glass-btn btn-green half" onclick="takePic('Cash')" style="background:rgba(5,196,107,0.2); color:#05c46b;">Capture Cash</button>
+                <button class="glass-btn btn-green half" onclick="takePic('UPI')" style="background:rgba(5,196,107,0.2); color:#05c46b;">Capture UPI</button>
+            </div>
+
+            <div class="dashed-line"></div>
+            <div class="flex-row mt-10">
+                <label for="camUpload" class="glass-btn w-100" style="background: rgba(0, 168, 255, 0.2); color: #00a8ff; font-weight:bold;">
+                    + Upload Image
+                </label>
+                <input type="file" id="camUpload" accept="image/*" style="display:none;" onchange="handleCamUpload(event)">
+            </div>
+            <p style="text-align:center; font-size:11px; color:#94a3b8; margin-top:5px;">(Or Paste Image from Clipboard Ctrl+V)</p>
+            
+            <div id="camGallery" class="cam-gallery mt-10" style="max-height: 200px; overflow-y:auto;"></div>
+            <button class="glass-btn btn-red w-100 mt-10 text-red" onclick="closeCamera()" style="background:rgba(255,77,77,0.2);">Close</button>
+        </div>
+    </div>
+
+    <!-- Edit -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Edit Bill</h3>
+            <input type="hidden" id="eIdx">
+            
+            <div class="flex-row"><input type="date" id="eDate" class="glass-input half"><input type="text" id="eMob" class="glass-input half" placeholder="Mobile"></div>
+            <div class="flex-row"><input type="text" id="eGender" class="glass-input half" placeholder="Title/Gender"><input type="text" id="eName" class="glass-input half" placeholder="Name"><input type="text" id="eAge" class="glass-input" placeholder="Age" style="width: 30%;"></div>
+            <div class="flex-row"><input type="text" id="eDr" class="glass-input half" placeholder="Dr Name"><input type="text" id="eHosp" class="glass-input half" placeholder="Hospital"></div>
+
+            <div class="dashed-line"></div>
+            <h4 style="font-size:14px; color:#94a3b8;">Edit Tests</h4>
+            <div class="autocomplete-box">
+                <input type="text" id="eTestSearch" placeholder="Search Test to Add" class="glass-input" oninput="suggestTests('eTestSearch', 'eTestSug', 'edit')" onblur="hideSuggestions('eTestSug')">
+                <div id="eTestSug" class="suggestions"></div>
+            </div>
+            <div id="eSelectedTests" style="max-height: 200px; overflow-y:auto; margin-bottom: 10px;"></div>
+            <div class="dashed-line"></div>
+
+            <div class="flex-row"><input type="number" id="eVisit" class="glass-input half" placeholder="Visits"><input type="number" id="eKm" class="glass-input half" placeholder="KM"></div>
+            
+            <div class="flex-row"><input type="number" id="eTotalAmt" class="glass-input half" placeholder="Total Amt"><input type="number" id="eDiscount" class="glass-input half" placeholder="Discount"></div>
+            <div class="flex-row"><input type="number" id="eDueAmt" class="glass-input half" placeholder="Due Amt"><input type="number" id="eCash" class="glass-input half" placeholder="Cash"></div>
+            <div class="flex-row"><input type="number" id="eUpi" class="glass-input half" placeholder="UPI"><input type="number" id="eCard" class="glass-input half" placeholder="Card"></div>
+            <div class="flex-row"><input type="number" id="ePayLater" class="glass-input half" placeholder="Pay Later"></div>
+            
+            <div class="flex-row mt-10"><button class="glass-btn btn-green half text-green" onclick="saveEdit()" style="background:rgba(5,196,107,0.2);">Update</button><button class="glass-btn btn-red half text-red" onclick="closeModal('editModal')" style="background:rgba(255,77,77,0.2);">Cancel</button></div>
+        </div>
+    </div>
+
+    <script>
+        // GLOBAL GLOW EFFECT
+        document.addEventListener('click', function(e) {
+            let glow = document.createElement('div'); glow.className = 'click-glow';
+            glow.style.left = e.clientX + 'px'; glow.style.top = e.clientY + 'px';
+            document.body.appendChild(glow); setTimeout(() => glow.remove(), 400);
+        });
+
+        // TOAST
+        function showToast(msg = "Successful!") {
+            let t = document.getElementById("toast"); t.innerText = msg; t.style.display = "block";
+            setTimeout(() => { t.style.display = "none"; }, 1500);
+        }
+
+        // DEFAULT TESTS
+        const baseTestsStr = "Complete Blood Count (CBC)|Whole Blood|EDTA,Fasting Blood Sugar (FBS)|Plasma|Fluoride,Post Prandial Blood Sugar (PPBS)|Plasma|Fluoride,Random Blood Sugar (RBS)|Plasma|Fluoride,HbA1c|Whole Blood|EDTA,Blood Urea|Serum|SST,Serum Creatinine|Serum|SST,Uric Acid|Serum|SST,Total Bilirubin|Serum|SST,Direct Bilirubin|Serum|SST,SGOT|Serum|SST,SGPT|Serum|SST,ALP|Serum|SST,Total Protein|Serum|SST,Albumin|Serum|SST,Globulin|Serum|SST,Lipid Profile|Serum|SST,Total Cholesterol|Serum|SST,Triglycerides|Serum|SST,HDL|Serum|SST,LDL|Serum|SST,Thyroid Profile|Serum|SST,T3|Serum|SST,T4|Serum|SST,TSH|Serum|SST,Vit B12|Serum|SST,Vit D3|Serum|SST,Calcium|Serum|SST,Phosphorus|Serum|SST,Magnesium|Serum|SST,Sodium|Serum|SST,Potassium|Serum|SST,Chloride|Serum|SST,Iron|Serum|SST,TIBC|Serum|SST,Ferritin|Serum|SST,CRP|Serum|SST,RA Factor|Serum|SST,ASO Titre|Serum|SST,Widal|Serum|SST,VDRL|Serum|SST,HBsAg|Serum|SST,Anti HCV|Serum|SST,HIV|Serum|SST,Dengue NS1|Serum|SST,Dengue IgG IgM|Serum|SST,MP|Whole Blood|EDTA,Typhoid Dot|Serum|SST,Urine Routine|Urine|Container,Stool Routine|Stool|Container,Semen Analysis|Semen|Container,Blood Grouping|Whole Blood|EDTA,BT CT|Blood|NA,PT INR|Plasma|Citrate,APTT|Plasma|Citrate,D-Dimer|Plasma|Citrate,Troponin I|Serum|SST,Troponin T|Serum|SST,CPK|Serum|SST,CPK-MB|Serum|SST,LDH|Serum|SST,Amylase|Serum|SST,Lipase|Serum|SST,H. Pylori|Serum|SST,ANA|Serum|SST,FSH|Serum|SST,LH|Serum|SST,Prolactin|Serum|SST,Testosterone|Serum|SST,Estradiol|Serum|SST,Progesterone|Serum|SST,Beta HCG|Serum|SST,AMH|Serum|SST,CA 125|Serum|SST,CA 15-3|Serum|SST,CA 19-9|Serum|SST,CEA|Serum|SST,PSA|Serum|SST,Cortisol|Serum|SST,Insulin|Serum|SST,ESR|Whole Blood|EDTA,RBC Count|Whole Blood|EDTA,WBC Count|Whole Blood|EDTA,Platelet Count|Whole Blood|EDTA";
+        let defaultTests = baseTestsStr.split(',').map(x => { let p = x.split('|'); return {n: p[0], s: p[1], t: p[2], price: 0}; });
+
+        // STATE (Unchanged Keys for Data Retention)
+        let cUser = "", cRole = "", curId = "";
+        let users = JSON.parse(localStorage.getItem("ul_u12")) || [{name: "Rakesh", id: "36409", role: "Owner"}, {name: "Rajesh", id: "8311", role: "Employee"}];
+        let bills = JSON.parse(localStorage.getItem("ul_b12")) || [];
+        let doctors = JSON.parse(localStorage.getItem("ul_d12")) || [];
+        let hospitals = JSON.parse(localStorage.getItem("ul_h12")) || [];
+        let savedTests = JSON.parse(localStorage.getItem("ul_t12"));
+        let tests = savedTests && savedTests.length > 0 ? savedTests : defaultTests;
+        let pkgs = JSON.parse(localStorage.getItem("ul_p12")) || [];
+        let dailyKms = JSON.parse(localStorage.getItem("ul_dkm12")) || {}; 
+        
+        let nbTempTests = []; let editTempTests = []; let pkgTempTests = [];
+        let stream = null; let curCamBill = null; let cModeText = "No Amount";
+        let isSH = false; let shId = "";
+
+        const today = new Date().toISOString().split('T')[0];
+        document.querySelectorAll('input[type="date"]').forEach(el => el.value = today);
+
+        window.onload = () => { if (localStorage.getItem("ul_usr12")) { curId = localStorage.getItem("ul_usr12"); checkLogin(curId); } };
+
+        function loginApp() { let id = document.getElementById("loginId").value; checkLogin(id); }
+        function checkLogin(id) {
+            let u = users.find(x => x.id === id);
+            if(u) { cUser = u.name; cRole = u.role; curId = u.id; localStorage.setItem("ul_usr12", curId); unlock(); } 
+            else { document.getElementById("errorMsg").style.display = "block"; setTimeout(()=>document.getElementById("errorMsg").style.display = "none", 2000); }
+        }
+        function unlock() {
+            document.getElementById("lockScreen").style.display = "none"; document.getElementById("mainApp").style.display = "block";
+            document.getElementById("profName").innerText = `${cUser} (${cRole})`;
+            if(cRole === "Owner") { document.getElementById("ownerSettings").style.display = "block"; document.getElementById("empLogoutBtn").style.display = "none"; renderUsers(); } 
+            else { document.getElementById("ownerSettings").style.display = "none"; document.getElementById("empLogoutBtn").style.display = "block"; }
+            calcDash(); renderOrders(); renderTests(); renderPkgs();
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('.app-section').forEach(e => e.classList.remove('active-section'));
+            document.querySelectorAll('.nav-btn').forEach(e => e.classList.remove('active'));
+            document.getElementById(t).classList.add('active-section'); event.target.classList.add('active');
+            if(t==='dashboard') calcDash(); if(t==='order') renderOrders();
+            if(t==='summary') renderSummary(); if(t==='cancelEdit') renderCancelEdit();
+            if(t==='newBill') { nbTempTests = []; renderTempTests('nb'); clearAllErrors(); }
+            if(t==='profile') { pkgTempTests = []; renderTempTests('pkg'); }
+        }
+        function switchAcc() { if(confirm("Logout?")) { localStorage.removeItem("ul_usr12"); location.reload(); } }
+        function showModal(id) { let m = document.getElementById(id); m.style.display="flex"; m.classList.add("show"); }
+        function closeModal(id) { let m = document.getElementById(id); m.classList.remove("show"); setTimeout(()=>m.style.display="none", 100); }
+
+        // MANAGE DR/HOSP
+        let manageType = ""; 
+        function openManageModal(type) { manageType = type; document.getElementById("manageTitle").innerText = `Manage ${type}s`; document.getElementById("manageInput").placeholder = `Enter new ${type} name`; document.getElementById("manageInput").value = ""; renderManageList(); showModal('manageModal'); }
+        function renderManageList() { let arr = manageType === 'Doctor' ? doctors : hospitals; document.getElementById("manageList").innerHTML = arr.map((item, i) => `<div class="list-item"><span>${item}</span><span class="text-red" style="cursor:pointer;" onclick="deleteManageItem(${i})">🗑</span></div>`).join(''); }
+        function saveManageItem() {
+            let val = document.getElementById("manageInput").value.trim(); if(!val) return;
+            if(manageType === 'Doctor') { if(!doctors.includes(val)) { doctors.push(val); localStorage.setItem('ul_d12', JSON.stringify(doctors)); } } 
+            else { if(!hospitals.includes(val)) { hospitals.push(val); localStorage.setItem('ul_h12', JSON.stringify(hospitals)); } }
+            document.getElementById("manageInput").value = ""; renderManageList(); showToast();
+        }
+        function deleteManageItem(i) { if(confirm("Delete?")) { if(manageType === 'Doctor') { doctors.splice(i, 1); localStorage.setItem('ul_d12', JSON.stringify(doctors)); } else { hospitals.splice(i, 1); localStorage.setItem('ul_h12', JSON.stringify(hospitals)); } renderManageList(); } }
+
+        // PROFILE LOGIC
+        function saveUser() {
+            let n = document.getElementById("uName").value, id = document.getElementById("uId").value, r = document.getElementById("uRole").value;
+            if(n && id) { if(users.find(u => u.id === id)) return; users.push({name: n, id: id, role: r}); localStorage.setItem("ul_u12", JSON.stringify(users)); document.getElementById("uName").value = ""; document.getElementById("uId").value = ""; renderUsers(); showToast(); }
+        }
+        function renderUsers() { document.getElementById("userList").innerHTML = users.map((u, i) => `<div class="list-item"><span><b>${u.name}</b> (${u.role}) - ID: ${u.id}</span>${u.id !== curId ? `<span class="text-red" style="cursor:pointer;" onclick="delUser(${i})">Delete</span>` : `<span class="text-green">You</span>`}</div>`).join(''); }
+        function delUser(i) { if(confirm("Delete?")) { users.splice(i,1); localStorage.setItem("ul_u12", JSON.stringify(users)); renderUsers(); } }
+
+        function saveTest() {
+            let n = document.getElementById("tName").value, s = document.getElementById("tSample").value, t = document.getElementById("tTube").value, a = parseInt(document.getElementById("tAmt").value)||0;
+            if(n) { tests.unshift({n: n, s: s || "-", t: t || "-", price: a}); localStorage.setItem("ul_t12", JSON.stringify(tests)); document.getElementById("tName").value = ""; document.getElementById("tSample").value = ""; document.getElementById("tTube").value = ""; document.getElementById("tAmt").value = ""; renderTests(); showToast(); }
+        }
+        function editTestPrice(i) {
+            let newAmt = prompt(`Edit amount for ${tests[i].n}:`, tests[i].price || 0);
+            if(newAmt !== null) { tests[i].price = parseInt(newAmt)||0; localStorage.setItem("ul_t12", JSON.stringify(tests)); renderTests(); }
+        }
+        function renderTests() { document.getElementById("testList").innerHTML = tests.map((t, i) => `<div class="list-item"><span style="flex:2;"><b>${t.n}</b> <br><small style="color:#94a3b8;">Sam: ${t.s} | Tube: ${t.t}</small></span><span style="flex:1; color:#05c46b; font-weight:bold;">₹${t.price||0}</span><span style="flex:1; text-align:right;"><span style="cursor:pointer; color:#00a8ff; margin-right:15px;" onclick="editTestPrice(${i})">✏ Edit</span><span class="text-red" style="cursor:pointer;" onclick="delTest(${i})">🗑</span></span></div>`).join(''); }
+        function delTest(i) { if(confirm("Delete?")) { tests.splice(i,1); localStorage.setItem("ul_t12", JSON.stringify(tests)); renderTests(); } }
+
+        function savePkg() {
+            let n = document.getElementById("pName").value, a = parseInt(document.getElementById("pAmt").value)||0;
+            if(n && pkgTempTests.length > 0) {
+                let tStr = pkgTempTests.map(t=>t.n).join(', '); pkgs.push({n: n, t: tStr, objs: JSON.parse(JSON.stringify(pkgTempTests)), price: a}); 
+                localStorage.setItem("ul_p12", JSON.stringify(pkgs)); document.getElementById("pName").value = ""; document.getElementById("pAmt").value = ""; pkgTempTests=[]; renderTempTests('pkg'); renderPkgs(); showToast(); 
+            }
+        }
+        function editPkgPrice(i) {
+            let newAmt = prompt(`Edit amount for ${pkgs[i].n}:`, pkgs[i].price || 0);
+            if(newAmt !== null) { pkgs[i].price = parseInt(newAmt)||0; localStorage.setItem("ul_p12", JSON.stringify(pkgs)); renderPkgs(); }
+        }
+        function renderPkgs() { document.getElementById("pkgList").innerHTML = pkgs.map((p, i) => `<div class="list-item"><span style="flex:2;"><b>${p.n}</b> <br><small style="color:#94a3b8;">${p.t}</small></span><span style="flex:1; color:#05c46b; font-weight:bold;">₹${p.price||0}</span><span style="flex:1; text-align:right;"><span style="cursor:pointer; color:#00a8ff; margin-right:15px;" onclick="editPkgPrice(${i})">✏ Edit</span><span class="text-red" style="cursor:pointer;" onclick="delPkg(${i})">🗑</span></span></div>`).join(''); }
+        function delPkg(i) { if(confirm("Delete?")) { pkgs.splice(i,1); localStorage.setItem("ul_p12", JSON.stringify(pkgs)); renderPkgs(); } }
+
+        // DASHBOARD DAILY KM
+        function saveDailyKm() {
+            let d = document.getElementById("dKmDate").value; let k = parseInt(document.getElementById("dKmValue").value) || 0;
+            if(d) { dailyKms[d] = k; localStorage.setItem("ul_dkm12", JSON.stringify(dailyKms)); showToast(); calcDash(); document.getElementById("dKmValue").value=""; }
+        }
+        function calcDash() {
+            let d1 = document.getElementById("dDate1").value, d2 = document.getElementById("dDate2").value; let v = 0, k = 0;
+            bills.forEach(b => { if(b.status === "Active" && b.date >= d1 && b.date <= d2) v += parseInt(b.visit); });
+            for(let date in dailyKms) { if(date >= d1 && date <= d2) k += parseInt(dailyKms[date]); }
+            document.getElementById("dVisits").innerText = v; document.getElementById("dVisitAmt").innerText = `₹${v*50}`; document.getElementById("dKm").innerText = k; document.getElementById("dKmAmt").innerText = `₹${k*3}`;
+        }
+
+        // NEW BILL 
+        function openSameHomeModal() { document.getElementById('shDate').value = document.getElementById('nbDate').value; renderSHList(); showModal('shModal'); }
+        function renderSHList() { let d = document.getElementById('shDate').value; document.getElementById('shList').innerHTML = bills.filter(b => b.status === "Active" && b.date === d && !b.isLeave && !b.isNoColl).map(b => `<div class="card" onclick="linkSH('${b.id}', '${b.name}', '${b.age}')" style="cursor:pointer;"><b>${b.name} (${b.age})</b> - ID: ${b.id}</div>`).join(''); }
+        function linkSH(id, name, age) { isSH = true; shId = id; document.getElementById('nbVisit').value = 0; document.getElementById('linkedInfo').innerHTML = `Linked with: ${name} (${age}) [ID: ${id}]`; document.getElementById('linkedInfo').style.display = "block"; closeModal('shModal'); }
+        function setGender(g) { document.getElementById("nbGender").value = g; }
+        function checkHospForVisit() { document.getElementById("nbVisit").value = document.getElementById("nbHosp").value.trim() !== "" ? 0 : 1; }
+        
+        function clearError(el) { el.classList.remove("error-glow"); }
+        function clearAllErrors() { document.querySelectorAll('.error-glow').forEach(e => e.classList.remove('error-glow')); }
+
+        function formatMobile(el) {
+            el.value = el.value.replace(/\s/g, ''); 
+            if(el.value.length === 10) { el.style.borderColor = '#00a8ff'; el.style.color = '#00a8ff'; el.style.boxShadow = '0 0 10px rgba(0,168,255,0.5)'; } 
+            else if(el.value.length > 0) { el.style.borderColor = '#ff4d4d'; el.style.color = '#ff4d4d'; el.style.boxShadow = '0 0 10px rgba(255,77,77,0.5)'; } 
+            else { el.style.borderColor = '#2a3b5c'; el.style.color = '#fff'; el.style.boxShadow = 'none'; }
+            suggestMobile();
+        }
+
+        function togglePayOpts() { let el = document.getElementById("payOpts"); el.style.display = el.style.display === "none" ? "block" : "none"; }
+        function calcDue() {
+            let t = parseFloat(document.getElementById("nbTotalAmt").value) || 0; let d = parseFloat(document.getElementById("nbDiscount").value) || 0;
+            let c = parseFloat(document.getElementById("nbCash").value) || 0; let u = parseFloat(document.getElementById("nbUpi").value) || 0; let card = parseFloat(document.getElementById("nbCard").value) || 0;
+            let due = t - d - c - u - card; document.getElementById("nbDueAmt").value = due > 0 ? due : 0; document.getElementById("nbPayLater").value = due > 0 ? due : 0; 
+        }
+
+        function suggestArr(inputId, sugId, arr) {
+            let val = document.getElementById(inputId).value.toLowerCase(); let sug = document.getElementById(sugId);
+            if (!val) { sug.style.display = "none"; return; } let matches = arr.filter(i => i.toLowerCase().includes(val));
+            if (matches.length > 0) { sug.innerHTML = matches.map(m => `<div onmousedown="fillInput('${inputId}', '${sugId}', '${m}')">${m}</div>`).join(''); sug.style.display = "block"; } else sug.style.display = "none";
+        }
+        function fillInput(inputId, sugId, val) { document.getElementById(inputId).value = val; document.getElementById(sugId).style.display = "none"; }
+
+        function suggestTests(inputId, sugId, listType) {
+            let val = document.getElementById(inputId).value.toLowerCase(); let sug = document.getElementById(sugId);
+            if (!val) { sug.style.display = "none"; return; } let matches = [];
+            tests.forEach(t => { if(t.n.toLowerCase().includes(val)) matches.push({n: t.n, s: t.s, t: t.t, price: t.price||0, type: "Test"}); });
+            if(listType !== 'pkg') pkgs.forEach(p => { if(p.n.toLowerCase().includes(val)) matches.push({n: p.n, s: "-", t: "-", price: p.price||0, type: "Package", pObjs: p.objs}); });
+            if (matches.length > 0) { sug.innerHTML = matches.map((m, idx) => `<div onmousedown="addTestToList(${idx}, '${listType}', '${sugId}')" data-item='${JSON.stringify(m)}'><b>${m.n}</b> <small style="color:#94a3b8;">(${m.type})</small></div>`).join(''); sug.style.display = "block"; } else sug.style.display = "none";
+        }
+        function addTestToList(idx, listType, sugId) {
+            let sugDiv = document.getElementById(sugId); let item = JSON.parse(sugDiv.children[idx].getAttribute('data-item')); let arr = listType==='nb' ? nbTempTests : (listType==='edit' ? editTempTests : pkgTempTests);
+            if(item.type === "Package" && item.pObjs) { item.pObjs.forEach(o => arr.push(o)); } else { arr.push({n: item.n, s: item.s, t: item.t, price: item.price}); }
+            
+            // Auto Update Total Amount if New Bill
+            if(listType === 'nb') {
+                let currentTotal = parseFloat(document.getElementById("nbTotalAmt").value) || 0;
+                document.getElementById("nbTotalAmt").value = currentTotal + (item.price || 0);
+                calcDue();
+            }
+            
+            if(listType==='nb') document.getElementById("nbTestSearch").value = ""; else if(listType==='edit') document.getElementById("eTestSearch").value = ""; else document.getElementById("pTestSearch").value = "";
+            sugDiv.style.display = "none"; renderTempTests(listType);
+        }
+        function removeTestFromList(idx, listType) { 
+            if(listType === 'nb') { 
+                let item = nbTempTests[idx];
+                let currentTotal = parseFloat(document.getElementById("nbTotalAmt").value) || 0;
+                let newTotal = currentTotal - (item.price || 0);
+                document.getElementById("nbTotalAmt").value = newTotal > 0 ? newTotal : 0;
+                calcDue();
+                nbTempTests.splice(idx, 1); renderTempTests('nb'); 
+            } else if(listType === 'edit') { editTempTests.splice(idx, 1); renderTempTests('edit'); } else if(listType === 'pkg') { pkgTempTests.splice(idx, 1); renderTempTests('pkg'); } 
+        }
+        function renderTempTests(listType) {
+            let container = listType === 'nb' ? document.getElementById("nbSelectedTests") : (listType === 'edit' ? document.getElementById("eSelectedTests") : document.getElementById("pkgSelectedTests"));
+            let arr = listType === 'nb' ? nbTempTests : (listType === 'edit' ? editTempTests : pkgTempTests);
+            if(arr.length > 0) { container.innerHTML = arr.map((t, i) => `<div class="test-tag"><div><b>${i+1}. ${t.n}</b> <br><small style="color:#94a3b8;">Samp: ${t.s} | Tube: ${t.t}</small></div><span class="text-red" style="cursor:pointer;" onclick="removeTestFromList(${i}, '${listType}')">🗑</span></div>`).join(''); } 
+            else container.innerHTML = "";
+        }
+        function hideSuggestions(id) { setTimeout(() => document.getElementById(id).style.display = "none", 200); }
+
+        function suggestMobile() {
+            let val = document.getElementById("nbMobile").value; let sug = document.getElementById("mobSug"); if(val.length < 2) { sug.style.display = "none"; return; }
+            let uniqueBills = []; let map = new Map(); for(let b of bills.slice().reverse()) { if(!map.has(b.mobile)){ map.set(b.mobile, true); uniqueBills.push(b); } }
+            let matches = uniqueBills.filter(b => b.mobile && b.mobile.includes(val));
+            if(matches.length > 0) {
+                let showList = matches.slice(0, 4); let extraList = matches.slice(4);
+                let html = showList.map(b => `<div onmousedown="fillMobile('${b.mobile}', '${b.name}', '${b.gender}', '${b.age}', '${b.dr}')">${b.mobile} - ${b.name}</div>`).join('');
+                if(extraList.length > 0) { html += `<div id="mobMoreBtn" style="text-align:center; color:#00a8ff; padding:10px; cursor:pointer;" onmousedown="event.preventDefault(); document.getElementById('mobExtra').style.display='block'; this.style.display='none';">^ View All ${matches.length} Records</div><div id="mobExtra" style="display:none;">` + extraList.map(b => `<div onmousedown="fillMobile('${b.mobile}', '${b.name}', '${b.gender}', '${b.age}', '${b.dr}')">${b.mobile} - ${b.name}</div>`).join('') + `</div>`; }
+                sug.innerHTML = html; sug.style.display = "block";
+            } else sug.style.display = "none";
+        }
+        function fillMobile(mob, name, gen, age, dr) { document.getElementById("nbMobile").value = mob; document.getElementById("nbName").value = name; document.getElementById("nbGender").value = gen; document.getElementById("nbAge").value = age; document.getElementById("nbDr").value = dr; document.getElementById("mobSug").style.display = "none"; }
+        function suggestData(inputId, sugId, field) {
+            let val = document.getElementById(inputId).value.toLowerCase(); let sug = document.getElementById(sugId); if(!val) { sug.style.display = "none"; return; }
+            let items = [...new Set(bills.map(b => b[field]))].filter(i => i && i.toLowerCase().includes(val));
+            if(items.length) { sug.innerHTML = items.map(i => `<div onmousedown="fillInput('${inputId}', '${sugId}', '${i}')">${i}</div>`).join(''); sug.style.display = "block"; } else sug.style.display = "none";
+        }
+
+        // SAVE BILL
+        function saveBill() {
+            clearAllErrors();
+            let nameVal = document.getElementById("nbName").value.trim();
+            let isLeave = (nameVal.toLowerCase() === 'leave');
+            let isNoColl = (nameVal.toLowerCase() === 'no collections');
+            
+            let ageVal = document.getElementById("nbAge").value.trim();
+            let mobVal = document.getElementById("nbMobile").value.trim();
+            let visVal = document.getElementById("nbVisit").value.trim();
+
+            if(!isLeave && !isNoColl) {
+                let err = false;
+                if(!nameVal) { document.getElementById("nbName").classList.add("error-glow"); err=true; }
+                if(!ageVal) { document.getElementById("nbAge").classList.add("error-glow"); err=true; }
+                if(!mobVal) { document.getElementById("nbMobile").classList.add("error-glow"); err=true; }
+                if(!visVal && visVal!=="0") { document.getElementById("nbVisit").classList.add("error-glow"); err=true; }
+                if(err) return; 
+            }
+
+            let finalName = nameVal, finalAge = ageVal, finalMob = mobVal, finalGen = document.getElementById("nbGender").value;
+            let finalDr = document.getElementById("nbDr").value, finalHosp = document.getElementById("nbHosp").value;
+            let finalVis = parseInt(visVal)||0, finalKm = parseInt(document.getElementById("nbKm").value)||0;
+            let finalTests = JSON.parse(JSON.stringify(nbTempTests)), finalTStr = nbTempTests.map(t=>t.n).join(', ');
+
+            if(isLeave) {
+                finalName = "Leave"; finalAge = "-"; finalMob = "-"; finalGen = "-"; finalDr = "-"; finalHosp = "-";
+                finalVis = 0; finalKm = 0; finalTests = []; finalTStr = "";
+            } else if(isNoColl) {
+                finalName = "No collections"; finalAge = "-"; finalMob = "-"; finalGen = "-"; finalDr = "-"; finalHosp = "-";
+                finalVis = 0; finalTests = []; finalTStr = ""; 
+            }
+
+            let t = parseFloat(document.getElementById("nbTotalAmt").value)||0;
+            let d = parseFloat(document.getElementById("nbDiscount").value)||0;
+            let u = parseFloat(document.getElementById("nbUpi").value)||0; 
+            let c = parseFloat(document.getElementById("nbCash").value)||0;
+            let card = parseFloat(document.getElementById("nbCard").value)||0;
+            let pl = parseFloat(document.getElementById("nbPayLater").value)||0;
+            let due = parseFloat(document.getElementById("nbDueAmt").value)||0;
+
+            let bill = {
+                id: Math.floor(10000+Math.random()*90000).toString(),
+                date: document.getElementById("nbDate").value, mobile: finalMob, name: finalName, gender: finalGen, age: finalAge, dr: finalDr, hosp: finalHosp, 
+                tests: finalTStr, testObjs: finalTests, visit: finalVis, km: finalKm, 
+                totalAmt: t, discount: d, upi: u, cash: c, card: card, payLater: pl, due: due,
+                total: u+c+card, isSH: isSH, linkId: shId, isLeave: isLeave, isNoColl: isNoColl, status: "Active", pics: []
+            };
+            bills.push(bill); localStorage.setItem("ul_b12", JSON.stringify(bills));
+            isSH = false; shId = ""; document.getElementById('linkedInfo').style.display = "none";
+            
+            document.querySelectorAll("#newBill input").forEach(i=> { if(i.type!=='date') i.value=""; });
+            document.getElementById("nbVisit").value = 1; document.getElementById("nbMobile").style.borderColor = "#2a3b5c"; document.getElementById("nbMobile").style.color = "#fff"; document.getElementById("nbMobile").style.boxShadow = "none";
+            nbTempTests = []; renderTempTests('nb'); showToast(); switchTab('order');
+        }
+
+        // ORDER & ACCORDION
+        function renderOrders() {
+            let d1 = document.getElementById("oDate1").value, d2 = document.getElementById("oDate2").value, s = document.getElementById("oSearch").value.toLowerCase();
+            document.getElementById("orderList").innerHTML = bills.filter(b => b.status === "Active" && b.date >= d1 && b.date <= d2 && (b.name.toLowerCase().includes(s)||b.id.includes(s))).map(b => {
+                let linkTx = b.isSH ? `<span class="text-blue" style="font-size:11px;">🔗 Linked: ${b.linkId}</span>` : ``;
+                let testArr = b.testObjs || []; let testDetails = testArr.map(t => `• ${t.n} <span style="color:#94a3b8; font-size:11px;">(Tube: ${t.t} | Samp: ${t.s})</span>`).join('<br>');
+                if(!testDetails) testDetails = b.tests || 'None';
+                let amtDetails = b.totalAmt > 0 ? `<b style="color:#fff;">Tot:</b> ₹${b.totalAmt} &nbsp;|&nbsp; <b style="color:#fff;">Dis:</b> ₹${b.discount} &nbsp;|&nbsp; <b style="color:#ff4d4d;">Due:</b> ₹${b.due}<br><b style="color:#fff;">Cash:</b> ₹${b.cash} &nbsp;|&nbsp; <b style="color:#fff;">UPI:</b> ₹${b.upi} &nbsp;|&nbsp; <b style="color:#fff;">Card:</b> ₹${b.card}` : `<b style="color:#fff;">Cash:</b> ₹${b.cash} &nbsp;|&nbsp; <b style="color:#fff;">UPI:</b> ₹${b.upi}`;
+
+                return `
+                <div class="card">
+                    <div class="flex-row" style="justify-content:space-between">
+                        <h4>${b.name} <span style="font-size:12px; font-weight:normal; color:#94a3b8;">(${b.age} ${b.gender!=="-"?b.gender:""})</span></h4>
+                        <span class="text-gold">#${b.id}</span>
+                    </div>
+                    ${linkTx}
+                    <button class="glass-btn w-100 mt-10" onclick="toggleAcc('acc_${b.id}')">View Details ⬇</button>
+                    <div id="acc_${b.id}" class="accordion-body">
+                        <div class="flex-row" style="align-items:flex-start;">
+                            <div style="flex:3; font-size:13px; line-height:1.6; color:#94a3b8;">
+                                <b style="color:#fff;">ID:</b> ${b.id} &nbsp;|&nbsp; <b style="color:#fff;">Visits:</b> ${b.visit}<br>
+                                <b style="color:#fff;">Mobile:</b> ${b.mobile}<br>
+                                ${amtDetails}<br>
+                                <div class="dashed-line" style="margin:5px 0;"></div><b style="color:#fff;">Tests:</b><br>${testDetails}
+                            </div>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                                <button class="glass-btn btn-green" style="font-size:24px; padding:15px;" onclick="openReceipt('${b.id}')">💵</button>
+                                <button class="glass-btn" style="font-size:24px; padding:15px; border-color:#00a8ff;" onclick="openCamera('${b.id}')">📷</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).reverse().join('');
+        }
+        function toggleAcc(id) { let el = document.getElementById(id); if(el.classList.contains("open")) el.classList.remove("open"); else { document.querySelectorAll('.accordion-body').forEach(x=>x.classList.remove("open")); el.classList.add("open"); } }
+
+        // CAMERA (UPLOAD & PASTE)
+        function openCamera(id) {
+            curCamBill = bills.find(x => x.id === id); cModeText = "No Amount"; document.getElementById("cMode").innerText = "Mode: " + cModeText;
+            document.getElementById("camUpload").value = ""; document.getElementById("camGallery").innerHTML = curCamBill.pics.map(p => `<img src="${p}">`).reverse().join('');
+            showModal('camModal');
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(s => { stream = s; document.getElementById("cameraStream").srcObject = stream; document.getElementById("cameraStream").style.display = "block"; document.getElementById("cBtns").style.display = "flex"; }).catch(e => { document.getElementById("cameraStream").style.display = "none"; document.getElementById("cBtns").style.display = "none"; });
+        }
+        function camAddSymbol() { let o = ["No Amount", "Cash", "UPI"]; cModeText = o[(o.indexOf(cModeText)+1)%o.length]; document.getElementById("cMode").innerText = "Mode: " + cModeText; }
+        
+        function takePic(t) { let v = document.getElementById("cameraStream"); let c = document.getElementById("canvasOverlay"); c.width = v.videoWidth; c.height = v.videoHeight; let ctx = c.getContext("2d"); ctx.drawImage(v, 0, 0, c.width, c.height); addWatermarkAndSave(c, t); }
+        function handleCamUpload(e) { let file = e.target.files[0]; if(!file) return; let reader = new FileReader(); reader.onload = (ev) => processImageForWatermark(ev.target.result); reader.readAsDataURL(file); }
+        document.addEventListener("paste", function(e) { if(document.getElementById("camModal").classList.contains("show")) { let items = (e.clipboardData || e.originalEvent.clipboardData).items; for (let item of items) { if (item.type.indexOf("image") === 0) { let blob = item.getAsFile(); let reader = new FileReader(); reader.onload = (ev) => processImageForWatermark(ev.target.result); reader.readAsDataURL(blob); } } } });
+        function processImageForWatermark(dataUrl) { let img = new Image(); img.onload = () => { let c = document.getElementById("canvasOverlay"); c.width = img.width; c.height = img.height; let ctx = c.getContext("2d"); ctx.drawImage(img, 0, 0); addWatermarkAndSave(c, cModeText === 'No Amount' ? '' : cModeText); }; img.src = dataUrl; }
+
+        function addWatermarkAndSave(c, t) {
+            let ctx = c.getContext("2d"); let fSize = Math.floor(c.width * 0.05); if(fSize < 20) fSize = 20; if(fSize > 60) fSize = 60;
+            ctx.font = `bold ${fSize}px Arial`; ctx.fillStyle = "yellow"; ctx.shadowColor = "black"; ctx.shadowBlur = 10;
+            ctx.fillText(`Name: ${curCamBill.name}`, 30, c.height - (fSize * 2 + 20)); 
+            if(cModeText !== "No Amount") { let amt = cModeText === 'Cash' ? curCamBill.cash : curCamBill.upi; ctx.fillText(`${cModeText}: ₹${amt}`, 30, c.height - 30); }
+            let d = c.toDataURL("image/jpeg", 0.8); curCamBill.pics.push(d); localStorage.setItem("ul_b12", JSON.stringify(bills));
+            document.getElementById("camGallery").innerHTML = `<img src="${d}">` + document.getElementById("camGallery").innerHTML; showToast();
+        }
+        function closeCamera() { if(stream) stream.getTracks().forEach(t=>t.stop()); closeModal('camModal'); }
+
+        function openReceipt(id) { let b = bills.find(x => x.id === id); document.getElementById("receiptPrint").innerHTML = `<h2 style="text-align:center; color:#333; margin-bottom: 20px;">Uni Lab Receipt</h2><div style="border:1px solid #ccc; padding:15px; border-radius:8px;"><p><b>Name:</b> ${b.gender!=="-"?b.gender:""} ${b.name}</p><p><b>Age:</b> ${b.age}</p><p><b>Mobile:</b> ${b.mobile}</p><p><b>ID:</b> ${b.id} | <b>Date:</b> ${b.date}</p><p><b>Dr:</b> ${b.dr} | <b>Hosp:</b> ${b.hosp || '-'}</p><hr style="margin:10px 0; border:0; border-top:1px dashed #ccc;"><p><b>Tests:</b> <br>${b.tests || 'None'}</p><p><b>Visit:</b> ${b.visit}</p><hr style="margin:10px 0; border:0; border-top:1px dashed #ccc;"><p>Tot: ₹${b.totalAmt||0} | Dis: ₹${b.discount||0} | Due: ₹${b.due||0}</p><p>Cash: ₹${b.cash} | UPI: ₹${b.upi} | Card: ₹${b.card||0}</p><h3 style="text-align:center; color:#05c46b; margin-top:10px;">Total Paid: ₹${b.total}</h3></div>`; showModal('receiptModal'); }
+        function printReceipt() { let btns = document.querySelectorAll('.no-print'); btns.forEach(b => b.style.display = 'none'); html2pdf(document.getElementById('receiptPrint'), { margin:10, filename: 'Receipt.pdf' }).then(() => btns.forEach(b => b.style.display = 'flex')); }
+
+        // CANCEL & EDIT
+        function renderCancelEdit() { let s = document.getElementById("ceSearch").value.toLowerCase(); document.getElementById("ceList").innerHTML = bills.filter(b => b.name.toLowerCase().includes(s)||b.id.includes(s)).map((b,i) => `<div class="card ${b.status==="Cancelled"?'deleted-card':''}"><h4>${b.name} (${b.id})</h4>${b.status==="Active" ? `<div class="flex-row mt-10"><button class="glass-btn btn-green half text-green" onclick="openEdit(${i})">Edit</button><button class="glass-btn btn-red half text-red" onclick="cancBill(${i})">Cancel</button></div>` : `<p class="text-red mt-10">CANCELLED</p>`}</div>`).join(''); }
+        function cancBill(i) { let p = Math.floor(1000+Math.random()*9000); let a = prompt(`Type PIN to delete: ${p}`); if(a==p) { bills[i].status = "Cancelled"; bills[i].visit=0; bills[i].km=0; localStorage.setItem("ul_b12", JSON.stringify(bills)); showToast(); renderCancelEdit(); } }
+        function openEdit(i) { let b = bills[i]; document.getElementById("eIdx").value = i; document.getElementById("eDate").value = b.date; document.getElementById("eMob").value = b.mobile; document.getElementById("eGender").value = b.gender; document.getElementById("eName").value = b.name; document.getElementById("eAge").value = b.age; document.getElementById("eDr").value = b.dr; document.getElementById("eHosp").value = b.hosp; document.getElementById("eVisit").value = b.visit; document.getElementById("eKm").value = b.km || 0; document.getElementById("eTotalAmt").value = b.totalAmt||0; document.getElementById("eDiscount").value = b.discount||0; document.getElementById("eDueAmt").value = b.due||0; document.getElementById("eCash").value = b.cash; document.getElementById("eUpi").value = b.upi; document.getElementById("eCard").value = b.card||0; document.getElementById("ePayLater").value = b.payLater||0; editTempTests = JSON.parse(JSON.stringify(b.testObjs || [])); renderTempTests('edit'); showModal('editModal'); }
+        function saveEdit() { let i = document.getElementById("eIdx").value; bills[i].date = document.getElementById("eDate").value; bills[i].mobile = document.getElementById("eMob").value; bills[i].gender = document.getElementById("eGender").value; bills[i].name = document.getElementById("eName").value; bills[i].age = document.getElementById("eAge").value; bills[i].dr = document.getElementById("eDr").value; bills[i].hosp = document.getElementById("eHosp").value; bills[i].testObjs = JSON.parse(JSON.stringify(editTempTests)); bills[i].tests = editTempTests.map(t => t.n).join(', '); bills[i].visit = parseInt(document.getElementById("eVisit").value)||0; bills[i].km = parseInt(document.getElementById("eKm").value)||0; bills[i].totalAmt = parseFloat(document.getElementById("eTotalAmt").value)||0; bills[i].discount = parseFloat(document.getElementById("eDiscount").value)||0; bills[i].due = parseFloat(document.getElementById("eDueAmt").value)||0; bills[i].cash = parseFloat(document.getElementById("eCash").value)||0; bills[i].upi = parseFloat(document.getElementById("eUpi").value)||0; bills[i].card = parseFloat(document.getElementById("eCard").value)||0; bills[i].payLater = parseFloat(document.getElementById("ePayLater").value)||0; bills[i].total = bills[i].cash+bills[i].upi+bills[i].card; localStorage.setItem("ul_b12", JSON.stringify(bills)); closeModal('editModal'); showToast(); renderCancelEdit(); }
+
+        // SUMMARY UI LIST & PDF 
+        function renderSummary() {
+            let d1 = document.getElementById("sD1").value, d2 = document.getElementById("sD2").value; 
+            let sb = bills.filter(b => b.status === "Active" && b.date >= d1 && b.date <= d2 && !b.isSH && (b.hosp === "" || b.hosp === "-"));
+            let grouped = {}; sb.forEach(b => { if(!grouped[b.date]) { grouped[b.date] = { bills: [], totalKm: (dailyKms[b.date] || 0) }; } grouped[b.date].bills.push(b); });
+            let v = 0, k = 0; let uiHtml = "";
+            let pdfHtml = `<div style="font-family: Arial, sans-serif;"><h2 style="border-bottom: 2px solid #333; padding-bottom: 5px; color:#000;">${cUser} - Management Report</h2><p style="margin-bottom: 20px; font-size: 14px; color:#555;">Duration Log: ${d1} to ${d2}</p>`;
+            
+            for (let date in grouped) {
+                v += grouped[date].bills.reduce((acc, curr) => acc + parseInt(curr.visit), 0); k += parseInt(grouped[date].totalKm);
+                
+                pdfHtml += `<div style="margin-bottom: 20px;"><div style="background: #f4f4f4; padding: 8px; font-weight: bold; border-bottom: 2px solid #000; font-size:14px; color:#000;">Date: ${date} &nbsp;|&nbsp; KM: ${grouped[date].totalKm}</div><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; color:#000;"><tr style="border-bottom: 1px solid #ccc; text-align:left;"><th style="padding: 8px;">ID</th><th style="padding: 8px;">Name</th><th style="padding: 8px;">Age</th><th style="padding: 8px;">Gender</th><th style="padding: 8px;">Dr/Hosp</th><th style="padding: 8px;">Visit Count</th></tr>${grouped[date].bills.map(b => `<tr style="border-bottom: 1px solid #eee;"><td style="padding: 8px; color:#555;">${b.id}</td><td style="padding: 8px;">${b.name}</td><td style="padding: 8px; color:#555;">${b.age}</td><td style="padding: 8px; color:#555;">${b.gender!=="-"?b.gender:"-"}</td><td style="padding: 8px; color:#555;">${b.dr || 'Self'}</td><td style="padding: 8px;">Visit ${b.visit}</td></tr>`).join('')}</table></div>`;
+                
+                uiHtml += `<div class="card"><h4 style="color:#00a8ff;">Date: ${date} (KM: ${grouped[date].totalKm})</h4>`;
+                grouped[date].bills.forEach(b => { uiHtml += `<div style="border-bottom:1px solid #2a3b5c; padding:8px 0; font-size:13px; color:#e2e8f0;"><b>ID: ${b.id}</b> | ${b.name} (${b.age} ${b.gender!=="-"?b.gender:""}) | Visit: ${b.visit}</div>`; }); uiHtml += `</div>`;
+            }
+            pdfHtml += `<div style="margin: 20px 0; border-top: 2px solid #000;"></div><div style="font-size: 14px; color:#000; text-align:right;"><p><b>Total Visits:</b> ${v} &nbsp;|&nbsp; <b>Visit Amount:</b> ₹${v * 50}</p><p><b>Total KM:</b> ${k} &nbsp;|&nbsp; <b>KM Amount:</b> ₹${k * 3}</p></div></div>`;
+            
+            document.getElementById("pdfContent").innerHTML = pdfHtml; 
+            document.getElementById("uiSummaryDisplay").innerHTML = uiHtml || `<p class="text-center" style="color:#94a3b8;">No bills found for selected dates.</p>`;
+        }
+        function savePDF() { let element = document.getElementById('sumPrint'); element.style.display = 'block'; document.querySelectorAll('.no-print').forEach(b=>b.style.display='none'); html2pdf(element, { margin: 10, filename: `${cUser}_Report.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).then(()=> { document.querySelectorAll('.no-print').forEach(b=>b.style.display='flex'); element.style.display = 'none'; showToast("PDF Saved!"); }); }
+    </script>
+</body>
+</html>
